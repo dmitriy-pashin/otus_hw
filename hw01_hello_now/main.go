@@ -14,8 +14,7 @@ func main() {
 	ntpTime, err := ntp.Time("time.apple.com")
 
 	if err != nil {
-		log.Print(err)
-		fmt.Println(err.Error())
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("exact time: %v\n", ntpTime)
