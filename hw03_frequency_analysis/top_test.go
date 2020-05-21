@@ -7,7 +7,7 @@ import (
 )
 
 // Change to true if needed
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -57,4 +57,29 @@ func TestTop10(t *testing.T) {
 			assert.ElementsMatch(t, expected, Top10(text))
 		}
 	})
+
+	t.Run("less then limit", func(t *testing.T) {
+		expected := []string{"как", "видите", "он", "спускается"}
+		assert.Subset(t, expected, Top10("как видите он спускается"))
+	})
+
+	t.Run("only special symbols and numbers", func(t *testing.T) {
+		assert.Len(t, Top10("0123456789 % ^ & * ? ! , . - = - "), 0)
+	})
+
+	t.Run("dash", func(t *testing.T) {
+		expected := []string{"какой-то", "какойто", "-какойто-"}
+		assert.Subset(t, expected, Top10("какой-то какойто - -какойто-"))
+	})
+
+	t.Run("repeats", func(t *testing.T) {
+		expected := []string{"спускается"}
+		assert.Subset(t, expected, Top10("спускается спускается спускается спускается спускается "))
+	})
+
+	t.Run("upper case", func(t *testing.T) {
+		expected := []string{"спускается"}
+		assert.ElementsMatch(t, expected, Top10("Спускается спускается"))
+	})
+
 }
