@@ -42,10 +42,41 @@ func TestList(t *testing.T) {
 		l.MoveToFront(l.Front()) // [80, 60, 40, 10, 30, 50, 70]
 		l.MoveToFront(l.Back())  // [70, 80, 60, 40, 10, 30, 50]
 
-		elems := make([]int, 0, l.Len())
-		for i := l.Back(); i != nil; i = i.Next {
-			elems = append(elems, i.Value.(int))
-		}
+		elems := getElements(l)
 		require.Equal(t, []int{50, 30, 10, 40, 60, 80, 70}, elems)
 	})
+
+	t.Run("Remove", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(10) // [10]
+		l.PushBack(20)  // [10, 20]
+		l.PushBack(30)  // [10, 20, 30]
+
+		l.Remove(l.Front())
+		require.Equal(t, 20, l.Front().Value.(int))
+		require.Equal(t, 2, l.Len())
+
+		elems := getElements(l)
+		require.Equal(t, []int{30, 20}, elems)
+
+		l.Remove(l.Back())
+		elems = getElements(l)
+		require.Equal(t, 1, l.Len())
+		require.Equal(t, []int{20}, elems)
+
+		l.Remove(l.Front())
+		elems = getElements(l)
+		require.Equal(t, 0, l.Len())
+		require.Equal(t, []int{}, elems)
+	})
+}
+
+func getElements(l List) []int {
+	elems := make([]int, 0, l.Len())
+	for i := l.Back(); i != nil; i = i.Next {
+		elems = append(elems, i.Value.(int))
+	}
+
+	return elems
 }

@@ -50,12 +50,75 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(5)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 300)
+		require.False(t, wasInCache)
+
+		c.Clear()
+
+		val, ok := c.Get("aaa")
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		wasInCache = c.Set("bbb", 300)
+		require.False(t, wasInCache)
+
+		val, ok = c.Get("bbb")
+		require.True(t, ok)
+		require.Equal(t, 300, val)
 	})
+
+	t.Run("capacity overflow", func(t *testing.T) {
+		c := NewCache(2)
+
+		c.Set("aaa", 100)
+		c.Set("bbb", 200)
+		c.Set("ccc", 200)
+
+		val, ok := c.Get("aaa")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("sorting by frequency", func(t *testing.T) {
+		c := NewCache(2)
+
+		c.Set("aaa", 100)
+		c.Set("bbb", 200)
+
+		val, ok := c.Get("aaa")
+		require.True(t, ok)
+		require.Equal(t, 100, val)
+
+		c.Set("ccc", 200)
+
+		val, ok = c.Get("aaa")
+		require.True(t, ok)
+		require.Equal(t, 100, val)
+
+		val, ok = c.Get("bbb")
+		require.False(t, ok)
+		require.Nil(t, val)
+
+	})
+
+	t.Run("empty key", func(t *testing.T) {
+		c := NewCache(1)
+
+		c.Set("", 100)
+
+		val, ok := c.Get("")
+		require.True(t, ok)
+		require.Equal(t, 100, val)
+	})
+
 }
 
 func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove if task with asterisk completed
 
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
