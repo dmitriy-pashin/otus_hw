@@ -30,8 +30,7 @@ func TestRun(t *testing.T) {
 		result := Run(tasks, workersCount, maxErrorsCount)
 
 		require.Equal(t, ErrErrorsLimitExceeded, result)
-		require.LessOrEqual(t,
-			int32(workersCount+maxErrorsCount), runTasksCount, "extra tasks were started")
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
 	})
 
 	t.Run("tasks without errors", func(t *testing.T) {
@@ -62,5 +61,51 @@ func TestRun(t *testing.T) {
 
 		require.Equal(t, int32(tasksCount), runTasksCount, "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
+	})
+
+	t.Run("tasks count less then workers count", func(t *testing.T) {
+		tasksCount := 5
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+		var sumTime time.Duration
+
+		for i := 0; i < tasksCount; i++ {
+			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+			sumTime += taskSleep
+
+			tasks = append(tasks, func() error {
+				time.Sleep(taskSleep)
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		workersCount := 10
+		maxErrorsCount := 1
+
+		start := time.Now()
+		result := Run(tasks, workersCount, maxErrorsCount)
+		elapsedTime := time.Since(start)
+		require.Nil(t, result)
+
+		require.Equal(t, int32(tasksCount), runTasksCount, "not all tasks were completed")
+		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
+	})
+
+	t.Run("wrong input data", func(t *testing.T) {
+		tasks := make([]Task, 0, 0)
+		result1 := Run(tasks, 1, 1)
+
+		require.Equal(t, ErrWrongInputParams, result1)
+
+		tasks = append(tasks, func() error {
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+			return nil
+		})
+
+		result2 := Run(tasks, 0, 1)
+		require.Equal(t, ErrWrongInputParams, result2)
+
 	})
 }
