@@ -30,10 +30,9 @@ func (c *Limiter) IsLimitExceeded() bool {
 	return c.count >= c.limit
 }
 
-// Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
-func Run(tasks []Task, N int, M int) error {
-
-	if len(tasks) == 0 || N <= 0 {
+// Run starts tasks in N goroutines and stops its work when receiving M errors from tasks.
+func Run(tasks []Task, n int, m int) error {
+	if len(tasks) == 0 || n <= 0 {
 		return ErrWrongInputParams
 	}
 
@@ -42,14 +41,14 @@ func Run(tasks []Task, N int, M int) error {
 	defer close(quitCh)
 
 	errLimiter := &Limiter{
-		limit: M,
+		limit: m,
 		mx:    &sync.Mutex{},
 	}
 
 	wg := &sync.WaitGroup{}
-	wg.Add(N)
+	wg.Add(n)
 
-	for i := 0; i < N; i++ {
+	for i := 0; i < n; i++ {
 		go worker(tasksCh, quitCh, wg, errLimiter)
 	}
 
