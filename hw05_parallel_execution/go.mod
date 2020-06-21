@@ -1,4 +1,4 @@
-module github.com/dmitriy-pashin/hw05_parallel_execution
+module github.com/dmitriy-pashin/otus_hw/hw05_parallel_execution
 
 go 1.14
 
